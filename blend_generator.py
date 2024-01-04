@@ -24,8 +24,8 @@ class ModelParameters:
         self.wid_joi = wid_joi
         self.dep_joi = dep_joi
         self.len_seg = len_seg
-        self.key_stone_small_arc = key_stone_small_arc
-        self.key_stone_large_arc = key_stone_large_arc
+        self.key_stone_small_arc = key_stone_small_arc * np.pi/180 # Convert to radians
+        self.key_stone_large_arc = key_stone_large_arc * np.pi/180 # Convert to radians
         self.floor_height = floor_height
         self.platform_height = platform_height
         self.platform_width = platform_width
@@ -359,7 +359,7 @@ class BlendGenerator(ModelParameters):
         
         bpy.ops.object.select_all(action='DESELECT')
         
-    def create_prism(base_shape_coords, extrude_length, extrude_axis, object_name):
+    def create_prism(self, base_shape_coords, extrude_length, extrude_axis, object_name):
         """
         Create a prism in Blender.
 
@@ -406,7 +406,7 @@ class BlendGenerator(ModelParameters):
         obj = bpy.data.objects.new(object_name, mesh)
         bpy.context.collection.objects.link(obj)
         
-        add_material(obj)
+        self.add_material(obj)
         
         obj["categoryID"] = -1
         obj["partID"] = -1
@@ -508,7 +508,7 @@ class BlendGenerator(ModelParameters):
 
 
 if __name__ == "__main__":
-    blend = BlendGenerator(r=2.75, num_segs=5, num_rings=20, wid_joi=0.015, dep_joi=0.05, len_seg=1.5, key_stone_small_arc=15, key_stone_large_arc=25, floor_height=0.5, platform_height=1.5, platform_width=1.2, platform_depth=0.1, platform_side='R', rail_width=0.1, rail_height=0.15, rail_spacing=1)
+    blend = BlendGenerator(r=2.75, num_segs=4, num_rings=20, wid_joi=0.015, dep_joi=0.05, len_seg=1.5, key_stone_small_arc=15, key_stone_large_arc=25, floor_height=0.5, platform_height=1.5, platform_width=1.2, platform_depth=0.1, platform_side='R', rail_width=0.1, rail_height=0.15, rail_spacing=1)
 
     blend.delete_all_objects()
     blend.generate_ring_edges()
@@ -523,6 +523,8 @@ if __name__ == "__main__":
     blend.duplicate_and_stack_objects(blend.num_rings - 1, (0, blend.len_seg, 0), stagger_angle=blend.key_stone_large_arc/2)
 
     blend.add_custom_properties()
+
+    blend.add_furniture()
   
     blend.insert_camera()
 
