@@ -12,6 +12,7 @@ if not dir in sys.path:
     sys.path.append(dir)
 
 from utils.dictionary_maker import generate_pc
+from utils.process_csv import remove_first_set_and_save
 
 class ModelParameters:
     def __init__(self, r, num_segs, num_rings, wid_joi, dep_joi, len_seg, 
@@ -19,8 +20,8 @@ class ModelParameters:
                  platform_height, platform_width, platform_depth, platform_side, 
                  rail_width, rail_height, rail_spacing):
         self.r = r
-        self.num_segs = num_segs
-        self.num_rings = num_rings
+        self.num_segs = int(num_segs)
+        self.num_rings = int(num_rings)
         self.wid_joi = wid_joi
         self.dep_joi = dep_joi
         self.len_seg = len_seg
@@ -30,7 +31,7 @@ class ModelParameters:
         self.platform_height = platform_height
         self.platform_width = platform_width
         self.platform_depth = platform_depth
-        self.platform_side = platform_side
+        self.platform_side = ['L', 'R'][int(platform_side)]
         self.rail_width = rail_width
         self.rail_height = rail_height
         self.rail_spacing = rail_spacing
@@ -501,32 +502,41 @@ class BlendGenerator(ModelParameters):
             self.create_prism(tube_coords, tunnel_length, 'Y', f'Tube{i+1}')
             
     
-    def export_blend(self):
-        file_name = 'scene_temp_file.blend'
+    def export_blend(self, file_name):
         file_path = f'/Users/tomhill/Documents/Tunnel_PointCloud_Sim/data/blender/{file_name}'
         bpy.ops.wm.save_as_mainfile(filepath=file_path)
 
 
 if __name__ == "__main__":
-    blend = BlendGenerator(r=2.75, num_segs=4, num_rings=20, wid_joi=0.015, dep_joi=0.05, len_seg=1.5, key_stone_small_arc=15, key_stone_large_arc=25, floor_height=0.5, platform_height=1.5, platform_width=1.2, platform_depth=0.1, platform_side='R', rail_width=0.1, rail_height=0.15, rail_spacing=1)
 
-    blend.delete_all_objects()
-    blend.generate_ring_edges()
-    blend.process_objects(bpy.context.scene)
+        # Load first parameter set and remove it from the array
+        parameter_sets = np.load('/Users/tomhill/Documents/Tunnel_PointCloud_Sim/data/numpy/parameter_sets.npy')
 
-    #___STAGGERING_NEEDS_TO_BE_ADDED_TO_PARAMS___
+        current_parameters = parameter_sets[0]
+        remove_first_set_and_save('/Users/tomhill/Documents/Tunnel_PointCloud_Sim/data/numpy/parameter_sets.npy')
 
-    # Rotate original ring to the centre position
-    blend.rotate_all_objects(blend.key_stone_large_arc/2, 'Y')
+        print(current_parameters)
 
-    # Duplicate the ring with a given stagger angle
-    blend.duplicate_and_stack_objects(blend.num_rings - 1, (0, blend.len_seg, 0), stagger_angle=blend.key_stone_large_arc/2)
+        blend = BlendGenerator(*current_parameters)
+        blend.delete_all_objects()
+        blend.generate_ring_edges()
+        blend.process_objects(bpy.context.scene)
 
-    blend.add_custom_properties()
+        #___STAGGERING_NEEDS_TO_BE_ADDED_TO_PARAMS___
 
-    blend.add_furniture()
-  
-    blend.insert_camera()
+        # Rotate original ring to the centre position
+        blend.rotate_all_objects(blend.key_stone_large_arc/2, 'Y')
 
-    blend.export_blend()
-            
+        # Duplicate the ring with a given stagger angle
+        blend.duplicate_and_stack_objects(blend.num_rings - 1, (0, blend.len_seg, 0), stagger_angle=blend.key_stone_large_arc/2)
+
+        blend.add_custom_properties()
+
+        blend.add_furniture()
+    
+        blend.insert_camera()
+
+        blend.export_blend(f'tunnel.blend')
+    
+
+                

@@ -1,7 +1,8 @@
 import pandas as pd
+import numpy as np
 
 
-def process_csv(output_csv):
+def clean_csv(output_csv):
     # Read the CSV file into a DataFrame
     input_csv = '/Users/tomhill/Documents/Tunnel_PointCloud_Sim/data/csv/tunnel_frames_1_to_1.csv'
     df = pd.read_csv(input_csv, sep=';')
@@ -20,4 +21,19 @@ def process_csv(output_csv):
     # Save the modified DataFrame to a new CSV file
     df.to_csv(output_csv, index=False)
 
-#process_csv('/Users/tomhill/Documents/Tunnel_PointCloud_Sim/data/pointclouds/tunnel1.csv')
+def remove_first_set_and_save(file_path):
+    # Load the numpy array from the file
+    params_array = np.load(file_path)
+
+    # Check if the array is not empty
+    if params_array.shape[0] > 0:
+        # Remove the first set of parameters
+        modified_array = params_array[1:]
+
+        # Save the modified array back to the file
+        np.save(file_path, modified_array)
+    else:
+        print("The file is empty or has only one set of parameters.")
+
+
+#clean_csv('/Users/tomhill/Documents/Tunnel_PointCloud_Sim/data/pointclouds/tunnel1.csv')
