@@ -1,5 +1,6 @@
 from utils.blend_executor import run_blender_script
 from utils.clean_csv import process_csv
+import os
 
 blender_path = '/Applications/Blender.app/Contents/MacOS/Blender'
 blend_generator_script_path = '/Users/tomhill/Documents/Tunnel_PointCloud_Sim/blend_generator.py'
@@ -15,3 +16,6 @@ if __name__ == "__main__":
     run_blender_script(blender_path, scanner_script_path, blend_file_path)
 
     process_csv('/Users/tomhill/Documents/Tunnel_PointCloud_Sim/data/pointclouds/tunnel1.csv')
+
+    os.remove('/Users/tomhill/Documents/Tunnel_PointCloud_Sim/data/csv/tunnel_frames_1_to_1.csv')
+    os.remove('/Users/tomhill/Documents/Tunnel_PointCloud_Sim/data/blender/scene_temp_file.blend')
