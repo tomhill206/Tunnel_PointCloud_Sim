@@ -6,6 +6,7 @@ from mathutils import Matrix, Vector
 import numpy as np
 import math
 
+# Need to add project directory so Blender can access project files 
 dir = '/Users/tomhill/Documents/Tunnel_PointCloud_Sim/'
 if not dir in sys.path:
     sys.path.append(dir)
@@ -13,11 +14,11 @@ if not dir in sys.path:
 from utils.dictionary_maker import generate_pc
 
 class ModelParameters:
-    def __init__(self, radius, num_segs, num_rings, wid_joi, dep_joi, len_seg, 
+    def __init__(self, r, num_segs, num_rings, wid_joi, dep_joi, len_seg, 
                  key_stone_small_arc, key_stone_large_arc, floor_height, 
                  platform_height, platform_width, platform_depth, platform_side, 
                  rail_width, rail_height, rail_spacing):
-        self.r = radius
+        self.r = r
         self.num_segs = num_segs
         self.num_rings = num_rings
         self.wid_joi = wid_joi
@@ -57,7 +58,7 @@ class BlendGenerator(ModelParameters):
         # Create dictionary defining all edges and vertices for all segments in a ring
         all_segment_data = generate_pc(self.num_segs, self.len_seg, self.r, self.wid_joi, self.dep_joi, self.key_stone_small_arc, self.key_stone_large_arc)
         
-        for i in range(num_segs):
+        for i in range(self.num_segs):
 
             obj_name = f"seg{i}"
             mesh_data = bpy.data.meshes.new(f"{obj_name}_data")
@@ -77,10 +78,10 @@ class BlendGenerator(ModelParameters):
             
             # Add all edges
             for c_edge in segment_data["c_edges"]:
-                add_circular_edge(bm, *c_edge)
+                self.add_circular_edge(bm, *c_edge)
 
             for s_edge in segment_data["s_edges"]:
-                add_straight_edge(bm, s_edge)
+                self.add_straight_edge(bm, s_edge)
 
             # Update the BMesh to the mesh
             bm.to_mesh(mesh_data)
@@ -90,7 +91,7 @@ class BlendGenerator(ModelParameters):
 
             bm.free()
     
-    def process_objects(scene):
+    def process_objects(self, scene):
         # Iterate through all objects in the scene
         for obj in bpy.data.objects:
             # Deselect all objects
@@ -103,10 +104,10 @@ class BlendGenerator(ModelParameters):
             bpy.context.view_layer.objects.active = obj
 
             # Call the create_faces() function
-            create_faces()
+            self.create_faces()
 
             # Add the material to the object
-            add_material(obj)
+            self.add_material(obj)
         
         bpy.ops.object.select_all(action='DESELECT')
         
@@ -120,7 +121,7 @@ class BlendGenerator(ModelParameters):
         mesh = bpy.context.object.data
         bm = bmesh.from_edit_mesh(mesh)
         
-        all_edge_indices = generate_all_edge_indices()
+        all_edge_indices = self.generate_all_edge_indices()
 
         for i in range(6):
             edge_indices_to_select = all_edge_indices[i]
@@ -152,17 +153,15 @@ class BlendGenerator(ModelParameters):
         vertex_coords = [(vertex_vector.x, vertex_vector.y, vertex_vector.z) for vertex_vector in vertex_vectors]
 
         # Calculate start angle
-        start_angle = angle_of_vector(vertex_coords[0])
-        end_angle = angle_of_vector(vertex_coords[1])
+        start_angle = self.angle_of_vector(vertex_coords[0])
+        end_angle = self.angle_of_vector(vertex_coords[1])
         
         if end_angle < start_angle:
             end_angle += 2 * np.pi
             
         angle_between = end_angle - start_angle
         
-        curve_res = 32  # Adjust for smoothness
-        
-        angles = np.linspace(start_angle, start_angle + angle_between, curve_res + 1)
+        angles = np.linspace(start_angle, start_angle + angle_between, self.curve_res + 1)
         # Add the curved edge vertices to the mesh
         for ang in angles:
             x = center_location[0] + radius * math.sin(ang)
@@ -504,12 +503,12 @@ class BlendGenerator(ModelParameters):
     
     def export_blend(self):
         file_name = 'scene_temp_file.blend'
-        file_path = f'/Users/tomhill/Documents/MeshMaker/scene_temp/{file_name}'
+        file_path = f'/Users/tomhill/Documents/Tunnel_PointCloud_Sim/data/blender/{file_name}'
         bpy.ops.wm.save_as_mainfile(filepath=file_path)
 
 
 if __name__ == "__main__":
-    blend = BlendGenerator(radius=2.75, num_segs=5, num_rings=20, wid_joi=0.015, dep_joi=0.05, len_seg=1.5, key_stone_small_arc=15, key_stone_large_arc=25, floor_height=0.5, platform_height=1.5, platform_width=1.2, platform_depth=0.1, platform_side='R', rail_width=0.1, rail_height=0.15, rail_spacing=1)
+    blend = BlendGenerator(r=2.75, num_segs=5, num_rings=20, wid_joi=0.015, dep_joi=0.05, len_seg=1.5, key_stone_small_arc=15, key_stone_large_arc=25, floor_height=0.5, platform_height=1.5, platform_width=1.2, platform_depth=0.1, platform_side='R', rail_width=0.1, rail_height=0.15, rail_spacing=1)
 
     blend.delete_all_objects()
     blend.generate_ring_edges()
@@ -526,5 +525,6 @@ if __name__ == "__main__":
     blend.add_custom_properties()
   
     blend.insert_camera()
-            
+
+    blend.export_blend()
             
