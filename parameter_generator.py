@@ -4,22 +4,22 @@ import os
 def generate_and_save_parameters(N, output_dir):
     # Define ranges for each parameter (min, max)
     ranges = {
-        'r': (2.5, 3.0),  # Radius (float)
-        'num_segs': (3, 7),  # Number of segments (integer range, exclusive upper bound)
-        'num_rings': (18, 26),  # Number of rings (integer range, exclusive upper bound)
+        'r': (2.5, 5),  # Radius (float)
+        'num_segs': (3, 10),  # Number of segments (integer range)
+        'num_rings': (20, 21),  # Always 20
         'wid_joi': (0.01, 0.02),  # Width of joint (float)
         'dep_joi': (0.04, 0.06),  # Depth of joint (float)
         'len_seg': (1.0, 2.0),  # Length of segment (float)
         'key_stone_small_arc': (10, 20),  # Key stone small arc angle (float)
-        'key_stone_large_arc': (20, 30),  # Key stone large arc angle (float)
+        'key_stone_large_arc': (20, 25),  # Key stone large arc angle (float)
         'floor_height': (0.3, 0.7),  # Floor height (float)
         'platform_height': (1.0, 2.0),  # Platform height (float)
         'platform_width': (1.0, 1.5),  # Platform width (float)
         'platform_depth': (0.05, 0.15),  # Platform depth (float)
-        'platform_side': (0, 1),  # Platform side (0 for 'L', 1 for 'R', integer range, exclusive upper bound)
+        'platform_side': (0, 1),  # Platform side (0 for 'L', 1 for 'R', integer range)
         'rail_width': (0.05, 0.15),  # Rail width (float)
         'rail_height': (0.1, 0.2),  # Rail height (float)
-        'rail_spacing': (0.5, 1.5),  # Rail spacing (float)
+        'rail_spacing': (0.9, 1.5),  # Rail spacing (float)
     }
 
     # Generate N sets of parameters
