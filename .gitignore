@@ -50,6 +50,6 @@ coverage.xml
 .env.*
 
 #data/
-.csv
-.blend
-.npy
+*.csv
+*.blend
+*.npy
