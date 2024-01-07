@@ -8,6 +8,6 @@ blender_app_path=/Applications/Blender.app/
 # Enter number of desired simulations
 number_of_simulations=2
 
-# Enter simulation step degree that you set INSIDE scanner_script.py 
+# Enter simulation step degree that you set INSIDE scanner_script.py (just used for predicting wait time)
 # (>=0.25 for practical run times)
 scanner_step_degree=0.3
