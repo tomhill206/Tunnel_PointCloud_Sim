@@ -12,7 +12,7 @@ if not dir in sys.path:
     sys.path.append(dir)
 
 from utils.dictionary_maker import generate_pc
-from utils.process_csv import remove_first_set_and_save
+from utils.process_data import remove_first_set_and_save
 
 class ModelParameters:
     def __init__(self, r, num_segs, num_rings, wid_joi, dep_joi, len_seg, 
@@ -47,6 +47,7 @@ class ModelParameters:
                     [-rail_width/2 * 0.3, -len_seg/2, -r + floor_height + rail_height * 0.2]])
 
         self.curve_res = 32
+        self.stagger_angle = self.key_stone_large_arc
 
 class BlendGenerator(ModelParameters):
     def __init__(self, *args, **kwargs):
@@ -500,7 +501,15 @@ class BlendGenerator(ModelParameters):
         for i in range(10):
             tube_coords = self.generate_random_tube_coords()
             self.create_prism(tube_coords, tunnel_length, 'Y', f'Tube{i+1}')
-            
+        
+    def add_tunnel_rings(self):
+
+        # Rotate original ring to the centre position
+        self.rotate_all_objects(self.key_stone_large_arc/2, 'Y')
+
+        # Duplicate the ring with a given stagger angle
+        self.duplicate_and_stack_objects(self.num_rings - 1, (0, self.len_seg, 0), stagger_angle=self.stagger_angle)
+
     
     def export_blend(self, file_name):
         file_path = f'/Users/tomhill/Documents/Tunnel_PointCloud_Sim/data/blender/{file_name}'
@@ -522,18 +531,12 @@ if __name__ == "__main__":
         blend.generate_ring_edges()
         blend.process_objects(bpy.context.scene)
 
-        #___STAGGERING_NEEDS_TO_BE_ADDED_TO_PARAMS___
-
-        # Rotate original ring to the centre position
-        blend.rotate_all_objects(blend.key_stone_large_arc/2, 'Y')
-
-        # Duplicate the ring with a given stagger angle
-        blend.duplicate_and_stack_objects(blend.num_rings - 1, (0, blend.len_seg, 0), stagger_angle=blend.key_stone_large_arc/2)
-
+        blend.add_tunnel_rings()
+        
         blend.add_custom_properties()
-
+        
         blend.add_furniture()
-    
+        
         blend.insert_camera()
 
         blend.export_blend(f'tunnel.blend')

@@ -4,9 +4,9 @@ import os
 def generate_and_save_parameters(N, output_dir):
     # Define ranges for each parameter (min, max)
     ranges = {
-        'r': (2.5, 5),  # Radius (float)
+        'r': (2.5, 3.5),  # Radius (float)
         'num_segs': (3, 10),  # Number of segments (integer range)
-        'num_rings': (20, 21),  # Always 20
+        'num_rings': (20, 20),  # Always 20
         'wid_joi': (0.01, 0.02),  # Width of joint (float)
         'dep_joi': (0.04, 0.06),  # Depth of joint (float)
         'len_seg': (1.0, 2.0),  # Length of segment (float)
