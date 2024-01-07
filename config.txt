@@ -1,0 +1,13 @@
+
+# Enter full path to Tunnel_PointCloud_Sim folder
+tunnel_pointcloud_sim_path=/Users/tomhill/Documents/Tunnel_PointCloud_Sim/
+
+# Enter full path to Blender application
+blender_app_path=/Applications/Blender.app/
+
+# Enter number of desired simulations
+number_of_simulations=2
+
+# Enter simulation step degree that you set INSIDE scanner_script.py 
+# (>=0.25 for practical run times)
+scanner_step_degree=0.3

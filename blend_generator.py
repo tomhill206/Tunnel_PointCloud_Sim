@@ -13,6 +13,7 @@ if not dir in sys.path:
 
 from utils.dictionary_maker import generate_pc
 from utils.process_data import remove_first_set_and_save
+from utils.read_config import read_config
 
 class ModelParameters:
     def __init__(self, r, num_segs, num_rings, wid_joi, dep_joi, len_seg, 
@@ -511,18 +512,19 @@ class BlendGenerator(ModelParameters):
         self.duplicate_and_stack_objects(self.num_rings - 1, (0, self.len_seg, 0), stagger_angle=self.stagger_angle)
 
     
-    def export_blend(self, file_name):
-        file_path = f'/Users/tomhill/Documents/Tunnel_PointCloud_Sim/data/blender/{file_name}'
+    def export_blend(self, file_path):
         bpy.ops.wm.save_as_mainfile(filepath=file_path)
 
 
 if __name__ == "__main__":
 
+        config = read_config('config.txt')
+
         # Load first parameter set and remove it from the array
-        parameter_sets = np.load('/Users/tomhill/Documents/Tunnel_PointCloud_Sim/data/numpy/parameter_sets.npy')
+        parameter_sets = np.load(config['tunnel_pointcloud_sim_path'] + '/data/numpy/parameter_sets.npy')
 
         current_parameters = parameter_sets[0]
-        remove_first_set_and_save('/Users/tomhill/Documents/Tunnel_PointCloud_Sim/data/numpy/parameter_sets.npy')
+        remove_first_set_and_save(config['tunnel_pointcloud_sim_path'] + '/data/numpy/parameter_sets.npy')
 
         print(current_parameters)
 
@@ -539,7 +541,7 @@ if __name__ == "__main__":
         
         blend.insert_camera()
 
-        blend.export_blend(f'tunnel.blend')
+        blend.export_blend(config['tunnel_pointcloud_sim_path'] + '/data/blender/tunnel.blend')
     
 
                 
