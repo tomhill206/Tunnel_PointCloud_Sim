@@ -33,6 +33,7 @@ Blender 3.3 LTS -> https://www.blender.org/download/lts/3-3/
 - Clone this repository
 - Move 'scanner_script.py' into the range_scanner folder.
 - Add information to the config file
+- Change output_path in scanning_script.py to your own for data/csv
 - Changing scanning resolution must be done inside scanner_script.py
 
 
