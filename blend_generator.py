@@ -55,7 +55,43 @@ class BlendGenerator(ModelParameters):
         super().__init__(*args, **kwargs)
 
         self.floor_arc = self.calculate_chord_arc(self.r, self.floor_height)
-    
+
+    def generate_joint_objects(self, segment_no, all_segment_data):
+        #breakpoint()
+
+        for i in range(4):
+            joint_data = all_segment_data[f"seg{segment_no}"][f"seg{segment_no}_joi{i}"]
+            obj_name = f"joint_surface{segment_no}_{i}"
+            mesh_data = bpy.data.meshes.new(f"{obj_name}_data")
+            mesh_obj = bpy.data.objects.new(obj_name, mesh_data)
+            bpy.context.scene.collection.objects.link(mesh_obj)
+            bm = bmesh.new()
+
+            # Add all the vertices to the mesh
+            for vert in joint_data["corners"]: 
+                bm.verts.new(vert)
+
+            # Refresh mesh (avoids errors)
+            bm.verts.ensure_lookup_table()
+            
+            # Add all edges
+            for c_edge in joint_data["c_edges"]:
+                self.add_circular_edge(bm, *c_edge)
+
+            for s_edge in joint_data["s_edges"]:
+                self.add_straight_edge(bm, s_edge)
+
+            # Update the BMesh to the mesh
+            bm.to_mesh(mesh_data)
+
+            # Update the mesh with the new data
+            mesh_data.update()
+
+            mesh_obj["categoryID"] = -1
+            mesh_obj["partID"] = -1
+
+            bm.free()
+        
     def generate_ring_edges(self):
         
         # Create dictionary defining all edges and vertices for all segments in a ring
@@ -63,14 +99,17 @@ class BlendGenerator(ModelParameters):
         
         for i in range(self.num_segs):
 
+            # Generate four joint objects for the joint surfaces of this segment
+            self.generate_joint_objects(i, all_segment_data)
+
             obj_name = f"seg{i}"
+            # Select the dict values for current segment in ring
+            segment_data = all_segment_data[obj_name]
+
             mesh_data = bpy.data.meshes.new(f"{obj_name}_data")
             mesh_obj = bpy.data.objects.new(obj_name, mesh_data)
             bpy.context.scene.collection.objects.link(mesh_obj)
             bm = bmesh.new()
-
-            # Select the dict values for current segment in ring
-            segment_data = all_segment_data[obj_name]
 
             # Add all the vertices to the mesh
             for vert in segment_data["corners"]: 
@@ -107,14 +146,18 @@ class BlendGenerator(ModelParameters):
             bpy.context.view_layer.objects.active = obj
 
             # Call the create_faces() function
-            self.create_faces()
+            if obj.name.startswith("joint"):
+                index = int(obj.name[-1])
+                self.create_faces(True, index)
+            else:
+                self.create_faces()
 
             # Add the material to the object
             self.add_material(obj)
         
         bpy.ops.object.select_all(action='DESELECT')
         
-    def create_faces(self):
+    def create_faces(self, isJoint=False, index=0):
         # Object has been selected already
         obj = bpy.context.active_object
         bpy.context.view_layer.objects.active = obj
@@ -123,30 +166,56 @@ class BlendGenerator(ModelParameters):
         # Get the mesh data
         mesh = bpy.context.object.data
         bm = bmesh.from_edit_mesh(mesh)
+
+        if not isJoint:
+            all_edge_indices_segs = self.generate_all_edge_indices_segs()
+
+            for i in range(6):
+                edge_indices_to_select = all_edge_indices_segs[i]
+
+                for edge_index1, edge_index2 in zip(*edge_indices_to_select):
+                    bm.edges.ensure_lookup_table()
+                    
+                    bm.edges[edge_index1].select_set(True)
+                    bm.edges[edge_index2].select_set(True)
+
+                    bmesh.update_edit_mesh(mesh)
+
+                    bpy.ops.mesh.edge_face_add()
+                    
+                    bm.edges.ensure_lookup_table()
+
+                    # Deselect edges
+                    # Deselect all edges
+                    for edge in bm.edges:
+                        edge.select_set(False)
+
+                    bmesh.update_edit_mesh(mesh)
         
-        all_edge_indices = self.generate_all_edge_indices()
+        else:
+            all_edge_indices_jois = self.generate_all_edge_indices_jois()
 
-        for i in range(6):
-            edge_indices_to_select = all_edge_indices[i]
+            for i in range(6):
+                edge_indices_to_select = all_edge_indices_jois[index][i]
 
-            for edge_index1, edge_index2 in zip(*edge_indices_to_select):
-                bm.edges.ensure_lookup_table()
-                
-                bm.edges[edge_index1].select_set(True)
-                bm.edges[edge_index2].select_set(True)
+                for edge_index1, edge_index2 in zip(*edge_indices_to_select):
+                    bm.edges.ensure_lookup_table()
+                    
+                    bm.edges[edge_index1].select_set(True)
+                    bm.edges[edge_index2].select_set(True)
 
-                bmesh.update_edit_mesh(mesh)
+                    bmesh.update_edit_mesh(mesh)
 
-                bpy.ops.mesh.edge_face_add()
-                
-                bm.edges.ensure_lookup_table()
+                    bpy.ops.mesh.edge_face_add()
+                    
+                    bm.edges.ensure_lookup_table()
 
-                # Deselect edges
-                # Deselect all edges
-                for edge in bm.edges:
-                    edge.select_set(False)
+                    # Deselect edges
+                    # Deselect all edges
+                    for edge in bm.edges:
+                        edge.select_set(False)
 
-                bmesh.update_edit_mesh(mesh)
+                    bmesh.update_edit_mesh(mesh)
                 
         bpy.ops.object.mode_set(mode='OBJECT')
         
@@ -183,7 +252,7 @@ class BlendGenerator(ModelParameters):
     def add_straight_edge(self, bm, vertex_indices):
         bm.edges.new((bm.verts[vertex_indices[0]], bm.verts[vertex_indices[1]]))
     
-    def generate_all_edge_indices(self):
+    def generate_all_edge_indices_segs(self):
         curve_res = self.curve_res
         all_edge_indices = []
         
@@ -228,6 +297,73 @@ class BlendGenerator(ModelParameters):
                 edge_indices_to_select = (index_13, index_57)
             
             all_edge_indices.append(edge_indices_to_select)
+        
+        return all_edge_indices
+
+    def generate_all_edge_indices_jois(self):
+        curve_res = self.curve_res
+        all_edge_indices = []
+        
+        # To simplify
+
+        for k in range(4):
+            if k <= 1:
+                indices_01 = [0]
+                indices_23 = [1]
+                indices_45 = [2]
+                indices_67 = [3]
+                index_02 = [4]
+                index_13 = [5]
+                index_46 = [6]
+                index_57 = [7]
+                index_04 = [8]
+                index_15 = [9]
+                index_26 = [10]
+                index_37 = [11]
+            else:
+                indices_01 = [i for i in range(curve_res)]
+                indices_23 = [curve_res + i for i in range(curve_res)]
+                indices_45 = [2*curve_res + i for i in range(curve_res)]
+                indices_67 = [3*curve_res + i for i in range(curve_res)]
+                index_02 = [4*curve_res]
+                index_13 = [4*curve_res + 1]
+                index_46 = [4*curve_res + 2]
+                index_57 = [4*curve_res + 3]
+                index_04 = [4*curve_res + 4]
+                index_15 = [4*curve_res + 5]
+                index_26 = [4*curve_res + 6]
+                index_37 = [4*curve_res + 7]
+
+            joint_edge_indices = []
+            # 6 faces on all the shapes
+            for j in range(6):
+                # Outer curve
+                if j == 0:
+                    edge_indices_to_select = (indices_01[::-1], indices_23[::-1])
+                    
+                # Inner curve
+                elif j == 1:
+                    edge_indices_to_select = (indices_45[::-1], indices_67[::-1])
+                
+                # Front
+                elif j == 2:
+                    edge_indices_to_select = (indices_01[::-1], indices_45[::-1])
+                    
+                # Back
+                elif j == 3:
+                    edge_indices_to_select = (indices_23[::-1], indices_67[::-1])
+                
+                # Left  
+                elif j == 4:
+                    edge_indices_to_select = (index_02, index_46)
+                
+                # Right
+                else:
+                    edge_indices_to_select = (index_13, index_57)
+                
+                joint_edge_indices.append(edge_indices_to_select)
+            
+            all_edge_indices.append(joint_edge_indices)
         
         return all_edge_indices
             
@@ -346,7 +482,9 @@ class BlendGenerator(ModelParameters):
         bpy.context.object.name = "Scanner"
 
     def add_custom_properties(self):
-        for i, obj in enumerate(bpy.data.objects):
+        objects = bpy.data.objects
+        seg_objects = [obj for obj in objects if obj.name.startswith("seg")]
+        for i, obj in enumerate(seg_objects):
             # Deselect all objects
             bpy.ops.object.select_all(action='DESELECT')
 

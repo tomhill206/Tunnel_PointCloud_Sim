@@ -106,7 +106,7 @@ def generate_corners(num_segs, len_seg, r, wid_joi, dep_joi, key_stone_small_arc
     return segment_vectors
 
 def modification(ang):
-    thickness = 0.05
+    thickness = 0.001
 
     return np.array([thickness * np.sin(ang), 0, thickness * np.cos(ang)])
 
@@ -181,8 +181,8 @@ def add_joint_information(segment_data, all_angles, seg_no, r, dep_joi, wid_joi,
 
             edge_01 = [(0, 1), r + dep_joi, (0, -len_seg/2, 0)]
             edge_23 = [(2, 3), r, (0, -len_seg/2 + wid_joi/2, 0)]
-            edge_45 = [(4, 5), r + dep_joi - 0.05 , (0, -len_seg/2, 0)]
-            edge_67 = [(6, 7), r - 0.05, (0, -len_seg/2 + wid_joi/2, 0)]
+            edge_45 = [(4, 5), r + dep_joi - 0.001 , (0, -len_seg/2, 0)]
+            edge_67 = [(6, 7), r - 0.001, (0, -len_seg/2 + wid_joi/2, 0)]
 
             circular_edges = [edge_01, edge_23, edge_45, edge_67]
 
@@ -212,8 +212,8 @@ def add_joint_information(segment_data, all_angles, seg_no, r, dep_joi, wid_joi,
 
             edge_01 = [(1, 0), r + dep_joi, (0, len_seg/2, 0)]
             edge_23 = [(3, 2), r, (0, len_seg/2 - wid_joi/2, 0)]
-            edge_45 = [(5, 4), r + dep_joi - 0.05 , (0, len_seg/2, 0)]
-            edge_67 = [(7, 6), r - 0.05, (0, len_seg/2 - wid_joi/2, 0)]
+            edge_45 = [(5, 4), r + dep_joi - 0.001 , (0, len_seg/2, 0)]
+            edge_67 = [(7, 6), r - 0.001, (0, len_seg/2 - wid_joi/2, 0)]
 
             circular_edges = [edge_01, edge_23, edge_45, edge_67]
 
@@ -227,7 +227,7 @@ def generate_circular_edges(segment_vectors, r, dep_joi, wid_joi, len_seg):
 
     num_segs = len(segment_vectors.keys())
 
-    # indices of connected points, radius, normal vector
+    # indices of connected points, radius, centre coord
     edge_01 = [(0, 1), r + dep_joi, (0, -len_seg/2, 0)]
     edge_23 = [(2, 3), r + dep_joi, (0, len_seg/2, 0)]
     edge_45 = [(4, 5), r, (0, -len_seg/2 + wid_joi/2, 0)]

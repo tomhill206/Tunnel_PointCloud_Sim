@@ -45,4 +45,4 @@ def generate_and_save_parameters(N, output_dir):
     print(f"Saved parameters to {file_path}")
 
 # Example usage
-#generate_and_save_parameters(3, 'data/numpy')
+generate_and_save_parameters(20, 'data/numpy')
