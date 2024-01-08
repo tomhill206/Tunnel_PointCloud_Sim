@@ -101,17 +101,17 @@ def generate_corners(num_segs, len_seg, r, wid_joi, dep_joi, key_stone_small_arc
             # Add the current 4 angles to the list
             all_angles.extend(angles)
          
-        segment_vectors[f"seg{i}"] = add_joint_information(segment_vectors[f"seg{i}"], all_angles, i, dep_joi, wid_joi, len_seg)
+        segment_vectors[f"seg{i}"] = add_joint_information(segment_vectors[f"seg{i}"], all_angles, i, r, dep_joi, wid_joi, len_seg)
 
     return segment_vectors
 
 def modification(ang):
-    thickness = 0.01
+    thickness = 0.05
 
     return np.array([thickness * np.sin(ang), 0, thickness * np.cos(ang)])
 
 
-def add_joint_information(segment_data, all_angles, seg_no, dep_joi, wid_joi, len_seg):
+def add_joint_information(segment_data, all_angles, seg_no, r, dep_joi, wid_joi, len_seg):
 
     # Add joint information
     for i in range(4):
@@ -124,10 +124,10 @@ def add_joint_information(segment_data, all_angles, seg_no, dep_joi, wid_joi, le
                 segment_data["corners"][0],
                 segment_data["corners"][6],
                 segment_data["corners"][4],
-                segment_data["corners"][2] + modification(all_angles[2]),
-                segment_data["corners"][0] + modification(all_angles[0]),
-                segment_data["corners"][6] + modification(all_angles[6]),
-                segment_data["corners"][4] + modification(all_angles[4])
+                segment_data["corners"][2] - modification(all_angles[2]),
+                segment_data["corners"][0] - modification(all_angles[0]),
+                segment_data["corners"][6] - modification(all_angles[6]),
+                segment_data["corners"][4] - modification(all_angles[4])
             ]
 
             straight_edges = [
@@ -146,10 +146,10 @@ def add_joint_information(segment_data, all_angles, seg_no, dep_joi, wid_joi, le
                 segment_data["corners"][3],
                 segment_data["corners"][5],
                 segment_data["corners"][7],
-                segment_data["corners"][1] + modification(all_angles[1]),
-                segment_data["corners"][3] + modification(all_angles[3]),
-                segment_data["corners"][5] + modification(all_angles[5]),
-                segment_data["corners"][7] + modification(all_angles[7])
+                segment_data["corners"][1] - modification(all_angles[1]),
+                segment_data["corners"][3] - modification(all_angles[3]),
+                segment_data["corners"][5] - modification(all_angles[5]),
+                segment_data["corners"][7] - modification(all_angles[7])
             ]
 
             straight_edges = [
@@ -168,10 +168,10 @@ def add_joint_information(segment_data, all_angles, seg_no, dep_joi, wid_joi, le
                 segment_data["corners"][1],
                 segment_data["corners"][4],
                 segment_data["corners"][5],
-                segment_data["corners"][0] + modification(all_angles[0]),
-                segment_data["corners"][1] + modification(all_angles[1]),
-                segment_data["corners"][4] + modification(all_angles[4]),
-                segment_data["corners"][5] + modification(all_angles[5])
+                segment_data["corners"][0] - modification(all_angles[0]),
+                segment_data["corners"][1] - modification(all_angles[1]),
+                segment_data["corners"][4] - modification(all_angles[4]),
+                segment_data["corners"][5] - modification(all_angles[5])
             ]
 
             straight_edges = [
@@ -180,9 +180,9 @@ def add_joint_information(segment_data, all_angles, seg_no, dep_joi, wid_joi, le
             ]
 
             edge_01 = [(0, 1), r + dep_joi, (0, -len_seg/2, 0)]
-            edge_23 = [(2, 3), r, (0, len_seg/2, 0)]
-            edge_45 = [(4, 5), r + dep_joi - 0.01 , (0, -len_seg/2 + wid_joi/2, 0)]
-            edge_67 = [(6, 7), r - 0.01, (0, len_seg/2 - wid_joi/2, 0)]
+            edge_23 = [(2, 3), r, (0, -len_seg/2 + wid_joi/2, 0)]
+            edge_45 = [(4, 5), r + dep_joi - 0.05 , (0, -len_seg/2, 0)]
+            edge_67 = [(6, 7), r - 0.05, (0, -len_seg/2 + wid_joi/2, 0)]
 
             circular_edges = [edge_01, edge_23, edge_45, edge_67]
 
@@ -198,10 +198,10 @@ def add_joint_information(segment_data, all_angles, seg_no, dep_joi, wid_joi, le
                 segment_data["corners"][2],
                 segment_data["corners"][7],
                 segment_data["corners"][6],
-                segment_data["corners"][3] + modification(all_angles[3]),
-                segment_data["corners"][2] + modification(all_angles[2]),
-                segment_data["corners"][7] + modification(all_angles[7]),
-                segment_data["corners"][6] + modification(all_angles[6])
+                segment_data["corners"][3] - modification(all_angles[3]),
+                segment_data["corners"][2] - modification(all_angles[2]),
+                segment_data["corners"][7] - modification(all_angles[7]),
+                segment_data["corners"][6] - modification(all_angles[6])
             ]
 
             straight_edges = [
@@ -209,10 +209,11 @@ def add_joint_information(segment_data, all_angles, seg_no, dep_joi, wid_joi, le
                 (0, 4), (1, 5), (2, 6), (3, 7)
             ]
 
-            edge_01 = [(0, 1), r + dep_joi, (0, -len_seg/2, 0)]
-            edge_23 = [(2, 3), r, (0, len_seg/2, 0)]
-            edge_45 = [(4, 5), r + dep_joi - 0.01 , (0, -len_seg/2 + wid_joi/2, 0)]
-            edge_67 = [(6, 7), r - 0.01, (0, len_seg/2 - wid_joi/2, 0)]
+
+            edge_01 = [(1, 0), r + dep_joi, (0, len_seg/2, 0)]
+            edge_23 = [(3, 2), r, (0, len_seg/2 - wid_joi/2, 0)]
+            edge_45 = [(5, 4), r + dep_joi - 0.05 , (0, len_seg/2, 0)]
+            edge_67 = [(7, 6), r - 0.05, (0, len_seg/2 - wid_joi/2, 0)]
 
             circular_edges = [edge_01, edge_23, edge_45, edge_67]
 
@@ -276,5 +277,5 @@ def generate_pc(num_segs, len_seg, r, wid_joi, dep_joi, key_stone_small_arc, key
 if __name__ == '__main__':
 
     segment_vectors = generate_pc(6, 1.5, 2.75, 0.1, 0.05, 20 * np.pi/180, 25 * np.pi/180)
-    print(segment_vectors["seg0"])
+    print(segment_vectors["seg0"]["seg0_joi3"])
 
