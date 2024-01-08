@@ -9,11 +9,17 @@ def generate_corners(num_segs, len_seg, r, wid_joi, dep_joi, key_stone_small_arc
     # subtract average keystone arc and divide by remaining segs
     standard_seg_arc = (2 * np.pi - (key_stone_large_arc + key_stone_small_arc) / 2) / (num_segs - 1)
 
-    # Initialize the segment_vectors dictionary with empty lists for each key
+    # Initalise dictionary representation of pc
     segment_vectors = {
-        **{f"seg{i}": {"corners": [], "s_edges": [], "c_edges": []} for i in range(0, num_segs)}
+        f"seg{i}": {
+            "corners": [], 
+            "s_edges": [], 
+            "c_edges": [],
+            **{f"seg{i}_joi{j}": {"corners": [], "s_edges": [], "c_edges": []} for j in range(4)}
+        } for i in range(num_segs)
     }
 
+    # Add segment information
     for i in range(num_segs):
 
         key = f"seg{i}"
@@ -53,10 +59,12 @@ def generate_corners(num_segs, len_seg, r, wid_joi, dep_joi, key_stone_small_arc
             # Angles on short side of keystone 
             ang3 = ang1
             ang4 = ang2
-        
-        angles = [ang1, ang2, ang3, ang4]
 
+        all_angles = []
+        
         for outerisTrue in [True, False]:
+            # reset angle list
+            angles = [ang1, ang2, ang3, ang4]
 
             for j, ang in enumerate(angles):
                 
@@ -82,11 +90,137 @@ def generate_corners(num_segs, len_seg, r, wid_joi, dep_joi, key_stone_small_arc
                         ang += ang_joi / 2
                     else:
                         ang -= ang_joi / 2
+                
+                # Update angle in list
+                angles[j] = ang
 
-                p = (rr * np.sin(ang), y, rr * np.cos(ang))
+                # Save point
+                p = [rr * np.sin(ang), y, rr * np.cos(ang)]
                 segment_vectors[f"seg{i}"]["corners"].append(p)
+            
+            # Add the current 4 angles to the list
+            all_angles.extend(angles)
+         
+        segment_vectors[f"seg{i}"] = add_joint_information(segment_vectors[f"seg{i}"], all_angles, i, dep_joi, wid_joi, len_seg)
 
     return segment_vectors
+
+def modification(ang):
+    thickness = 0.01
+
+    return np.array([thickness * np.sin(ang), 0, thickness * np.cos(ang)])
+
+
+def add_joint_information(segment_data, all_angles, seg_no, dep_joi, wid_joi, len_seg):
+
+    # Add joint information
+    for i in range(4):
+        key = f"seg{seg_no}_joi{i}"
+
+        if i == 0:
+
+            corners = [
+                segment_data["corners"][2],
+                segment_data["corners"][0],
+                segment_data["corners"][6],
+                segment_data["corners"][4],
+                segment_data["corners"][2] + modification(all_angles[2]),
+                segment_data["corners"][0] + modification(all_angles[0]),
+                segment_data["corners"][6] + modification(all_angles[6]),
+                segment_data["corners"][4] + modification(all_angles[4])
+            ]
+
+            straight_edges = [
+                (0, 1), (2, 3), (4, 5), (6, 7),
+                (0, 2), (1, 3), (4, 6), (5, 7), 
+                (0, 4), (1, 5), (2, 6), (3, 7)
+            ]
+
+            segment_data[key]["corners"].extend(corners)
+            segment_data[key]["s_edges"].extend(straight_edges)
+
+        elif i == 1:
+
+            corners = [
+                segment_data["corners"][1],
+                segment_data["corners"][3],
+                segment_data["corners"][5],
+                segment_data["corners"][7],
+                segment_data["corners"][1] + modification(all_angles[1]),
+                segment_data["corners"][3] + modification(all_angles[3]),
+                segment_data["corners"][5] + modification(all_angles[5]),
+                segment_data["corners"][7] + modification(all_angles[7])
+            ]
+
+            straight_edges = [
+                (0, 1), (2, 3), (4, 5), (6, 7),
+                (0, 2), (1, 3), (4, 6), (5, 7), 
+                (0, 4), (1, 5), (2, 6), (3, 7)
+            ]
+
+            segment_data[key]["corners"].extend(corners)
+            segment_data[key]["s_edges"].extend(straight_edges)
+        
+        elif i == 2:
+
+            corners = [
+                segment_data["corners"][0],
+                segment_data["corners"][1],
+                segment_data["corners"][4],
+                segment_data["corners"][5],
+                segment_data["corners"][0] + modification(all_angles[0]),
+                segment_data["corners"][1] + modification(all_angles[1]),
+                segment_data["corners"][4] + modification(all_angles[4]),
+                segment_data["corners"][5] + modification(all_angles[5])
+            ]
+
+            straight_edges = [
+                (0, 2), (1, 3), (4, 6), (5, 7), 
+                (0, 4), (1, 5), (2, 6), (3, 7)
+            ]
+
+            edge_01 = [(0, 1), r + dep_joi, (0, -len_seg/2, 0)]
+            edge_23 = [(2, 3), r, (0, len_seg/2, 0)]
+            edge_45 = [(4, 5), r + dep_joi - 0.01 , (0, -len_seg/2 + wid_joi/2, 0)]
+            edge_67 = [(6, 7), r - 0.01, (0, len_seg/2 - wid_joi/2, 0)]
+
+            circular_edges = [edge_01, edge_23, edge_45, edge_67]
+
+            segment_data[key]["corners"].extend(corners)
+            segment_data[key]["s_edges"].extend(straight_edges)
+            segment_data[key]["c_edges"].extend(circular_edges)
+
+
+        elif i == 3:
+
+            corners = [
+                segment_data["corners"][3],
+                segment_data["corners"][2],
+                segment_data["corners"][7],
+                segment_data["corners"][6],
+                segment_data["corners"][3] + modification(all_angles[3]),
+                segment_data["corners"][2] + modification(all_angles[2]),
+                segment_data["corners"][7] + modification(all_angles[7]),
+                segment_data["corners"][6] + modification(all_angles[6])
+            ]
+
+            straight_edges = [
+                (0, 2), (1, 3), (4, 6), (5, 7), 
+                (0, 4), (1, 5), (2, 6), (3, 7)
+            ]
+
+            edge_01 = [(0, 1), r + dep_joi, (0, -len_seg/2, 0)]
+            edge_23 = [(2, 3), r, (0, len_seg/2, 0)]
+            edge_45 = [(4, 5), r + dep_joi - 0.01 , (0, -len_seg/2 + wid_joi/2, 0)]
+            edge_67 = [(6, 7), r - 0.01, (0, len_seg/2 - wid_joi/2, 0)]
+
+            circular_edges = [edge_01, edge_23, edge_45, edge_67]
+
+            segment_data[key]["corners"].extend(corners)
+            segment_data[key]["s_edges"].extend(straight_edges)
+            segment_data[key]["c_edges"].extend(circular_edges)
+        
+    return segment_data
 
 def generate_circular_edges(segment_vectors, r, dep_joi, wid_joi, len_seg):
 
