@@ -16,10 +16,9 @@ from utils.process_data import remove_first_set_and_save
 from utils.read_config import read_config
 
 class ModelParameters:
-    def __init__(self, r, num_segs, num_rings, wid_joi, dep_joi, len_seg, 
-                 key_stone_small_arc, key_stone_large_arc, floor_height, 
-                 platform_height, platform_width, platform_depth, platform_side, 
-                 rail_width, rail_height, rail_spacing):
+    def __init__(self, r, num_segs, num_rings, dep_joi, len_seg, floor_height, 
+                            platform_height, platform_width, platform_depth,
+                            rail_width, rail_height, rail_spacing, wid_joi, key_stone_small_arc, key_stone_large_arc, platform_side):
         self.r = r
         self.num_segs = int(num_segs)
         self.num_rings = int(num_rings)
@@ -477,7 +476,7 @@ class BlendGenerator(ModelParameters):
         bpy.ops.object.select_all(action='DESELECT')
         
     def insert_camera(self):
-        bpy.ops.object.camera_add(location=(0, 15, 0), rotation=(np.pi/2, 0, 0))
+        bpy.ops.object.camera_add(location=(0, 0, 0), rotation=(np.pi/2, 0, 0))
         bpy.context.scene.camera = bpy.context.object
         bpy.context.object.name = "Scanner"
 
@@ -603,8 +602,8 @@ class BlendGenerator(ModelParameters):
 
         bounds = [-np.pi/2 + floor_arc/2 + np.pi/16, 3/2 * np.pi - floor_arc/2 - np.pi/16]
         angle = np.random.uniform(bounds[0], bounds[1])
-        tube_radius = np.random.uniform(0.05, 0.15)
-        wall_offset = np.random.uniform(0.01, 0.2)
+        tube_radius = np.random.uniform(0.005*r, 0.05*r)
+        wall_offset = np.random.uniform(0.01*r, 0.05*r)
         
         centre_radius = r - tube_radius - wall_offset
         centre_coords = np.array([centre_radius * np.cos(angle), -len_seg/2, centre_radius * np.sin(angle)])
@@ -649,6 +648,35 @@ class BlendGenerator(ModelParameters):
         # Duplicate the ring with a given stagger angle
         self.duplicate_and_stack_objects(self.num_rings - 1, (0, self.len_seg, 0), stagger_angle=self.stagger_angle)
 
+    def translate_objects_y(self, distance):
+        bpy.ops.object.select_all(action='SELECT')
+        # Iterate over all objects in the scene
+        for obj in bpy.context.scene.objects:
+            # Switch to object mode
+            bpy.ops.object.mode_set(mode='OBJECT')
+
+            # Select the object
+            bpy.context.view_layer.objects.active = obj
+            obj.select_set(True)
+
+            # Create a bmesh from the object's mesh data
+            bm = bmesh.new()
+            bm.from_mesh(obj.data)
+
+            # Apply translation to each vertex
+            for v in bm.verts:
+                v.co.y += distance
+
+            # Write the bmesh back to the object
+            bm.to_mesh(obj.data)
+            bm.free()
+
+            # Update the mesh's drawing
+            obj.data.update()
+
+            # Deselect the object
+            obj.select_set(False)
+
     
     def export_blend(self, file_path):
         bpy.ops.wm.save_as_mainfile(filepath=file_path)
@@ -676,6 +704,8 @@ if __name__ == "__main__":
         blend.add_custom_properties()
         
         blend.add_furniture()
+
+        blend.translate_objects_y(-(blend.num_rings*blend.len_seg/2 - blend.len_seg/2))
         
         blend.insert_camera()
 

@@ -6,18 +6,10 @@ def generate_typical_tunnel_parameters(num_samples):
 
     # Empirical
 
-    # Diameter
-    mean_diameter, std_diameter = 3.14, 1.61
-    min_diameter, max_diameter = 1.14, 13.2  # Truncation limits
+    # Diameter limits
+    min_diameter, max_diameter = 3, 10
 
-    # Sampling Outer Diameter from truncated Gaussian distribution
-    outer_diameter_dist = truncnorm(
-        (min_diameter - mean_diameter) / std_diameter,
-        (max_diameter - mean_diameter) / std_diameter,
-        loc=mean_diameter,
-        scale=std_diameter
-    )
-    outer_diameter = outer_diameter_dist.rvs(num_samples)
+    outer_diameter = np.linspace(min_diameter, max_diameter, num_samples)
 
     thickness = 0.0085 + 0.0391 * outer_diameter
 
@@ -33,9 +25,20 @@ def generate_typical_tunnel_parameters(num_samples):
 
     floor_height = 0.25 * radius
     platform_height = 0.6 * radius
+    platform_width = 0.2 * radius
+    platform_depth = platform_width / 10
+
+    # Constants
+
+    num_rings = np.full(num_samples, 20)
+    rail_width = np.full(num_samples, 0.1)
+    rail_height = np.full(num_samples, 0.1)
+    rail_spacing = np.full(num_samples, 1)
 
     # Combining all parameters
-    parameters = np.vstack((num_segs, thickness, radius, width, floor_height, platform_height)).T
+    parameters = np.vstack((radius, num_segs, num_rings, thickness, width, floor_height, 
+                            platform_height, platform_width, platform_depth,
+                            rail_width, rail_height, rail_spacing)).T
 
     return parameters
 
@@ -78,16 +81,10 @@ def generate_and_save_parameters(N, output_dir):
     
     # Define ranges for the additional parameters (min, max)
     additional_ranges = {
-        'num_rings': (20, 20),  # Always 20
         'wid_joi': (0.01, 0.02),  # Width of joint (float)
         'key_stone_small_arc': (10, 20),  # Key stone small arc angle (float)
         'key_stone_large_arc': (20, 25),  # Key stone large arc angle (float)
-        'platform_width': (1.0, 1.5),  # Platform width (float)
-        'platform_depth': (0.05, 0.15),  # Platform depth (float)
         'platform_side': (0, 1),  # Platform side (0 for 'L', 1 for 'R', integer range)
-        'rail_width': (0.05, 0.15),  # Rail width (float)
-        'rail_height': (0.1, 0.2),  # Rail height (float)
-        'rail_spacing': (0.9, 1.5),  # Rail spacing (float)
     }
 
     # Generate N sets of additional parameters
@@ -95,9 +92,7 @@ def generate_and_save_parameters(N, output_dir):
     for _ in range(N):
         additional_params = {}
         for param, (low, high) in additional_ranges.items():
-            if param == 'num_rings':  # num_rings is always 20
-                additional_params[param] = 20
-            elif param == 'platform_side':  # platform_side is either 0 or 1
+            if param == 'platform_side':  # platform_side is either 0 or 1
                 additional_params[param] = np.random.choice([0, 1])
             else:
                 additional_params[param] = np.random.uniform(low, high)
@@ -118,6 +113,6 @@ def generate_and_save_parameters(N, output_dir):
     print(f"Saved parameters to {file_path}")
 
 # Example usage
-generate_and_save_parameters(1, 'data/numpy')
+generate_and_save_parameters(2, 'data/numpy')
 
 

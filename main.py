@@ -1,7 +1,7 @@
 from utils.blend_executor import run_blender_script
 from utils.process_data import clean_csv
 from utils.read_config import read_config
-from parameter_generator import generate_and_save_parameters
+from parameter_generator_emp import generate_and_save_parameters
 import os
 import time
 import numpy as np
