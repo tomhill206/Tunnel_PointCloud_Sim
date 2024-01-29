@@ -8,18 +8,21 @@ def clean_csv(output_csv):
     df = pd.read_csv(input_csv, sep=';')
 
     # Define columns to keep
-    columns_to_keep = [0, 1, 6, 7, 8]  # 0-indexed column numbers
+    columns_to_keep = [1, 6, 7, 8, 10]  # 0-indexed column numbers
 
     # Filter the DataFrame to keep only the specified columns
     df = df.iloc[:, columns_to_keep]
 
     # Rearrange columns - move first two columns to the end
     cols = df.columns.tolist()
-    cols = cols[2:] + cols[:2]
+    cols = cols[1:4] + [cols[4]] + [cols[0]]
     df = df[cols]
 
+    # Set the values of the intensity column (column index 3) to zero
+    df.iloc[:, 3] = 0
+
     # Save the modified DataFrame to a new CSV file
-    df.to_csv(output_csv, index=False)
+    df.to_csv(output_csv, index=False, header=False)
 
 def remove_first_set_and_save(file_path):
     # Load the numpy array from the file

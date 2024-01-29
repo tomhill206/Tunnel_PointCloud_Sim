@@ -32,7 +32,7 @@ if __name__ == "__main__":
         print(f"Expected scan time: {expected_scan_time:.1f} seconds")
         run_blender_script(blender_path, scanner_script_path, blend_file_path)
 
-        clean_csv(f'data/pointclouds/tunnel{i}.csv')
+        clean_csv(f'data/pointclouds/tunnel{i}.txt')
 
         os.remove('data/csv/tunnel_frames_1_to_1.csv')
         os.remove('data/blender/tunnel.blend')

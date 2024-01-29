@@ -7,25 +7,27 @@ def generate_typical_tunnel_parameters(num_samples):
     # Empirical
 
     # Diameter limits
-    min_diameter, max_diameter = 3, 10
+    min_diameter, max_diameter = 5.4, 5.6
 
-    outer_diameter = np.linspace(min_diameter, max_diameter, num_samples)
+    inner_diameter = np.linspace(min_diameter, max_diameter, num_samples)
+    outer_diameter = (inner_diameter + 2*0.0085)/(1 - 2 * 0.0391)
 
-    thickness = 0.0085 + 0.0391 * outer_diameter
+    thickness = (outer_diameter - inner_diameter)/2
 
-    width_thickness_ratio = 20.38*np.exp(-outer_diameter/1.06) + 2.94
+    width_thickness_ratio = 20.38*np.exp(-outer_diameter/1.06) + 2.94 
 
-    width =  width_thickness_ratio * thickness
+    width =  width_thickness_ratio * thickness * 1.3
 
-    num_segs = sample_number_of_segments(outer_diameter)
+    #num_segs = sample_number_of_segments(outer_diameter)
+    num_segs = np.full(num_samples, 6)
 
-    radius = outer_diameter/2 - thickness
+    radius = inner_diameter/2
 
     # Assumed relationships
 
     floor_height = 0.25 * radius
     platform_height = 0.6 * radius
-    platform_width = 0.2 * radius
+    platform_width = 0.4 * radius
     platform_depth = platform_width / 10
 
     # Constants
@@ -113,6 +115,6 @@ def generate_and_save_parameters(N, output_dir):
     print(f"Saved parameters to {file_path}")
 
 # Example usage
-generate_and_save_parameters(2, 'data/numpy')
+generate_and_save_parameters(1, 'data/numpy')
 
 

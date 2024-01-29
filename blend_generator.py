@@ -86,8 +86,8 @@ class BlendGenerator(ModelParameters):
             # Update the mesh with the new data
             mesh_data.update()
 
-            mesh_obj["categoryID"] = -1
-            mesh_obj["partID"] = -1
+            mesh_obj["categoryID"] = 0
+            mesh_obj["partID"] = 0
 
             bm.free()
         
@@ -494,8 +494,8 @@ class BlendGenerator(ModelParameters):
             bpy.context.view_layer.objects.active = obj
 
             # Add custom properties (objects are selected in groups of increasing segment number)
-            obj["categoryID"] = i%self.num_rings
-            obj["partID"] = i//self.num_rings
+            obj["categoryID"] = i%self.num_rings + 1
+            obj["partID"] = i//self.num_rings + 1
         
         bpy.ops.object.select_all(action='DESELECT')
         
@@ -548,8 +548,8 @@ class BlendGenerator(ModelParameters):
         
         self.add_material(obj)
         
-        obj["categoryID"] = -1
-        obj["partID"] = -1
+        obj["categoryID"] = 0
+        obj["partID"] = 0
         
     def calculate_floor_coords(self):
         r = self.r
