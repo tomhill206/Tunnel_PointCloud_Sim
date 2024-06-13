@@ -5,6 +5,7 @@ import sys
 from mathutils import Matrix, Vector
 import numpy as np
 import math
+import random
 
 # Need to add project directory so Blender can access project files 
 dir = '/Users/tomhill/Documents/Tunnel_PointCloud_Sim/'
@@ -646,7 +647,7 @@ class BlendGenerator(ModelParameters):
         self.rotate_all_objects(self.key_stone_large_arc/2, 'Y')
 
         # Duplicate the ring with a given stagger angle
-        self.duplicate_and_stack_objects(self.num_rings - 1, (0, self.len_seg, 0), stagger_angle=self.stagger_angle)
+        self.duplicate_and_stack_objects(self.num_rings - 1, (0, self.len_seg, 0), stagger_angle=random.uniform(-1.2*self.key_stone_large_arc, 1.2*self.key_stone_large_arc))
 
     def translate_objects_y(self, distance):
         bpy.ops.object.select_all(action='SELECT')

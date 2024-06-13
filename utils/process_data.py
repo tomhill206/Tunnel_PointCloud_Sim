@@ -22,7 +22,7 @@ def clean_csv(output_csv):
     df.iloc[:, 3] = 0
 
     # Save the modified DataFrame to a new CSV file
-    df.to_csv(output_csv, index=False, header=False)
+    df.to_csv(output_csv, sep=' ', index=False, header=False)
 
 def remove_first_set_and_save(file_path):
     # Load the numpy array from the file

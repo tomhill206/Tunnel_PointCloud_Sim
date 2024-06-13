@@ -7,19 +7,24 @@ def generate_typical_tunnel_parameters(num_samples):
     # Empirical
 
     # Diameter limits
-    min_diameter, max_diameter = 5.4, 5.6
+    #min_diameter, max_diameter = 5.5, 5.5
 
-    inner_diameter = np.linspace(min_diameter, max_diameter, num_samples)
+    #inner_diameter = np.linspace(min_diameter, max_diameter, num_samples)
+    inner_diameter = np.full(num_samples, 5.5)
+    width = np.full(num_samples, 1.2)
+    num_segs = np.full(num_samples, 6)
+
     outer_diameter = (inner_diameter + 2*0.0085)/(1 - 2 * 0.0391)
-
     thickness = (outer_diameter - inner_diameter)/2
 
+    """
     width_thickness_ratio = 20.38*np.exp(-outer_diameter/1.06) + 2.94 
 
     width =  width_thickness_ratio * thickness * 1.3
+    """
 
     #num_segs = sample_number_of_segments(outer_diameter)
-    num_segs = np.full(num_samples, 6)
+    
 
     radius = inner_diameter/2
 
